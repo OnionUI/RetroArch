@@ -104,17 +104,14 @@ static void get_override_path(char *override_path, enum override_type type)
 /**
  * @brief Checks if a config override of [type] exists and contains either the "keep aspect" or "integer scaling" option
  * 
- * @param type Override type
+ * @param override_path Override path
  * @return true Config override contains scaling options - use it
  * @return false Config override does not contain scaling options
  */
-static bool check_config_has_scaling(enum override_type type)
+static bool check_config_has_scaling(const char *override_path)
 {
     bool ret = false;
     config_file_t *conf = NULL;
-    char override_path[PATH_MAX_LENGTH] = {0};
-
-    get_override_path(override_path, type);
 
     if ((conf = config_file_new_from_path_to_string(override_path))) {
         ret = !!config_get_entry(conf, "video_dingux_ipu_keep_aspect") || !!config_get_entry(conf, "video_scale_integer");
@@ -125,7 +122,7 @@ static bool check_config_has_scaling(enum override_type type)
 }
 
 /**
- * @brief Saves the "keep aspect" and "integer scaling" options as CONTENT override. If a GAME override with any of these options already exists, then the changes are saved as a GAME override.
+ * @brief Saves the "keep aspect" and "integer scaling" options as a config override.
  * 
  * @param settings 
  * @return true Config override was saved successfully
@@ -135,13 +132,16 @@ static bool write_core_override_aspect_scale(settings_t *settings)
 {
     char override_path[PATH_MAX_LENGTH] = {0};
     config_file_t *conf = NULL;
-    enum override_type type = OVERRIDE_CONTENT_DIR;
 
-    if (check_config_has_scaling(OVERRIDE_GAME)) {
-        type = OVERRIDE_GAME;
+    get_override_path(override_path, OVERRIDE_GAME);
+
+    if (!path_is_directory(override_path) || !check_config_has_scaling(override_path)) {
+        get_override_path(override_path, OVERRIDE_CONTENT_DIR);
+
+        if (!path_is_directory(override_path)) {
+            get_override_path(override_path, OVERRIDE_CORE);
+        }
     }
-
-    get_override_path(override_path, type);
 
     if (string_is_empty(override_path))
         return false;
