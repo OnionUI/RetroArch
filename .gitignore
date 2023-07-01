@@ -229,4 +229,4 @@ param.sfo
 /deps/SPIRV-Cross/out/build/x64-Debug
 
 # Visual Studio Code
-.vscode/
+.vscode/settings.json
