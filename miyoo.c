@@ -185,7 +185,7 @@ void miyoo_event_fullscreen_impl(settings_t *settings)
     video_driver_apply_state_changes();
 
     show_miyoo_fullscreen_notification(settings);
-    write_core_override_aspect_scale(settings)
+    write_core_override_aspect_scale(settings);
 }
 
 #endif
