@@ -4,6 +4,6 @@
 
 #include "configuration.h"
 
-void miyoo_event_fullscreen_impl(settings_t* settings);
+void miyoo_event_fullscreen_impl(settings_t *settings);
 
 #endif
