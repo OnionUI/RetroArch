@@ -5093,7 +5093,7 @@ static void retroarch_print_help(const char *arg0)
          "      --port=PORT                "
          "Port used to netplay. Default is 55435.\n"
          "      --mitm-session=ID           "
-         "MITM(relay) session ID to join.\n"
+         "MITM (relay) session ID to join.\n"
          "      --nick=NICK                "
          "Picks a username (for use with netplay). Not mandatory.\n"
          "      --check-frames=NUMBER      "
