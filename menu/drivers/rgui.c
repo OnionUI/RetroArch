@@ -288,11 +288,11 @@ typedef struct
 #ifdef HAVE_LANGEXTRA
       bitmapfont_lut_t *eng_6x10;
       bitmapfont_lut_t *lse_6x10;
+      bitmapfont_lut_t *rus_6x10;
       bitmapfont_lut_t *eng_10x10;
       bitmapfont_lut_t *chn_10x10;
       bitmapfont_lut_t *jpn_10x10;
       bitmapfont_lut_t *kor_10x10;
-      bitmapfont_lut_t *rus_10x10;
 #endif
    } fonts;
 
@@ -1417,6 +1417,11 @@ static void rgui_fonts_free(rgui_t *rgui)
       bitmapfont_free_lut(rgui->fonts.lse_6x10);
       rgui->fonts.lse_6x10 = NULL;
    }
+   
+   if (rgui->fonts.rus_6x10) {
+        bitmapfont_free_lut(rgui->fonts.rus_6x10);
+        rgui->fonts.rus_6x10 = NULL;
+   }
 
    if (rgui->fonts.eng_10x10)
    {
@@ -1440,12 +1445,6 @@ static void rgui_fonts_free(rgui_t *rgui)
    {
       bitmapfont_free_lut(rgui->fonts.kor_10x10);
       rgui->fonts.kor_10x10 = NULL;
-   }
-
-   if (rgui->fonts.rus_10x10)
-   {
-      bitmapfont_free_lut(rgui->fonts.rus_10x10);
-      rgui->fonts.rus_10x10 = NULL;
    }
 #endif
 }
@@ -1520,11 +1519,11 @@ static bool rgui_fonts_init(rgui_t *rgui)
 
       case RETRO_LANGUAGE_RUSSIAN:
       {
-         rgui->fonts.eng_10x10    = bitmapfont_10x10_load(RETRO_LANGUAGE_ENGLISH);
-         rgui->fonts.rus_10x10    = bitmapfont_10x10_load(RETRO_LANGUAGE_RUSSIAN);
+         rgui->fonts.eng_6x10    = bitmapfont_6x10_load(RETRO_LANGUAGE_ENGLISH);
+         rgui->fonts.rus_6x10    = bitmapfont_6x10_load(RETRO_LANGUAGE_RUSSIAN);
 
-         if (!rgui->fonts.eng_10x10 ||
-             !rgui->fonts.rus_10x10)
+         if (!rgui->fonts.eng_6x10 ||
+             !rgui->fonts.rus_6x10)
          {
             rgui_fonts_free(rgui);
             *msg_hash_get_uint(MSG_HASH_USER_LANGUAGE) = RETRO_LANGUAGE_ENGLISH;
@@ -1534,10 +1533,10 @@ static bool rgui_fonts_init(rgui_t *rgui)
             goto english;
          }
 
-         rgui->font_width         = FONT_10X10_WIDTH;
-         rgui->font_height        = FONT_10X10_HEIGHT;
-         rgui->font_width_stride  = FONT_10X10_WIDTH_STRIDE;
-         rgui->font_height_stride = FONT_10X10_HEIGHT_STRIDE;
+         rgui->font_width         = FONT_6X10_WIDTH;
+         rgui->font_height        = FONT_6X10_HEIGHT;
+         rgui->font_width_stride  = FONT_6X10_WIDTH_STRIDE;
+         rgui->font_height_stride = FONT_6X10_HEIGHT_STRIDE;
          rgui->language           = language;
          break;
       }
@@ -3704,8 +3703,8 @@ static void rgui_blit_line_rus(
       uint16_t shadow_color)
 {
    uint16_t *frame_buf_data   = rgui->frame_buf.data;
-   bitmapfont_lut_t *font_eng = rgui->fonts.eng_10x10;
-   bitmapfont_lut_t *font_rus = rgui->fonts.rus_10x10;
+   bitmapfont_lut_t *font_eng = rgui->fonts.eng_6x10;
+   bitmapfont_lut_t *font_rus = rgui->fonts.rus_6x10;
 
    while (!string_is_empty(message))
    {
@@ -3732,19 +3731,19 @@ static void rgui_blit_line_rus(
          else
             continue;
 
-         for (j = 0; j < FONT_10X10_HEIGHT; j++)
+         for (j = 0; j < FONT_6X10_HEIGHT; j++)
          {
             unsigned buff_offset = ((y + j) * fb_width) + x;
 
-            for (i = 0; i < FONT_10X10_WIDTH; i++)
+            for (i = 0; i < FONT_6X10_WIDTH; i++)
             {
-               if (*(symbol_lut + i + (j * FONT_10X10_WIDTH)))
+               if (*(symbol_lut + i + (j * FONT_6X10_WIDTH)))
                   *(frame_buf_data + buff_offset + i) = color;
             }
          }
       }
 
-      x += FONT_10X10_WIDTH_STRIDE;
+      x += FONT_6X10_WIDTH_STRIDE;
    }
 }
 
@@ -3760,8 +3759,8 @@ static void rgui_blit_line_rus_shadow(
    uint16_t color_buf[2];
    uint16_t shadow_color_buf[2];
    uint16_t *frame_buf_data   = rgui->frame_buf.data;
-   bitmapfont_lut_t *font_eng = rgui->fonts.eng_10x10;
-   bitmapfont_lut_t *font_rus = rgui->fonts.rus_10x10;
+   bitmapfont_lut_t *font_eng = rgui->fonts.eng_6x10;
+   bitmapfont_lut_t *font_rus = rgui->fonts.rus_6x10;
 
    color_buf[0]               = color;
    color_buf[1]               = shadow_color;
@@ -3794,13 +3793,13 @@ static void rgui_blit_line_rus_shadow(
          else
             continue;
 
-         for (j = 0; j < FONT_10X10_HEIGHT; j++)
+         for (j = 0; j < FONT_6X10_HEIGHT; j++)
          {
             unsigned buff_offset = ((y + j) * fb_width) + x;
 
-            for (i = 0; i < FONT_10X10_WIDTH; i++)
+            for (i = 0; i < FONT_6X10_WIDTH; i++)
             {
-               if (*(symbol_lut + i + (j * FONT_10X10_WIDTH)))
+               if (*(symbol_lut + i + (j * FONT_6X10_WIDTH)))
                {
                   uint16_t *frame_buf_ptr = frame_buf_data + buff_offset + i;
 
@@ -3815,7 +3814,7 @@ static void rgui_blit_line_rus_shadow(
          }
       }
 
-      x += FONT_10X10_WIDTH_STRIDE;
+      x += FONT_6X10_WIDTH_STRIDE;
    }
 }
 

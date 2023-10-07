@@ -45,6 +45,11 @@
 #define FONT_6X10_GLYPH_MIN_LSE 0x100
 #define FONT_6X10_GLYPH_MAX_LSE 0x24F
 
+#define FONT_6X10_FILE_RUS "bitmap6x10_rus.bin"
+#define FONT_6X10_SIZE_RUS 2432
+#define FONT_6X10_GLYPH_MIN_RUS 0x400
+#define FONT_6X10_GLYPH_MAX_RUS 0x45F
+
 /* Loads a font of the specified language
  * Returns NULL if language is invalid or
  * font file is missing */
@@ -75,7 +80,13 @@ bitmapfont_lut_t *bitmapfont_6x10_load(unsigned language)
 	      glyph_min = FONT_6X10_GLYPH_MIN_ENG;
 	      glyph_max = FONT_6X10_GLYPH_MAX_ENG;
 	      break;
-	      /* All Latin alphabet languages go here */
+	   case RETRO_LANGUAGE_RUSSIAN:
+        font_file = FONT_6X10_FILE_RUS;
+        font_size = FONT_6X10_SIZE_RUS;
+        glyph_min = FONT_6X10_GLYPH_MIN_RUS;
+        glyph_max = FONT_6X10_GLYPH_MAX_RUS;
+        break;
+	   /* All Latin alphabet languages go here */
 	   case RETRO_LANGUAGE_FRENCH:
 	   case RETRO_LANGUAGE_SPANISH:
 	   case RETRO_LANGUAGE_GERMAN:
