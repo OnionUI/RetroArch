@@ -784,15 +784,13 @@ static void *sdl_miyoomini_gfx_init(const video_info_t *video,
    const char *joypad_drv_name                = settings->arrays.input_joypad_driver;
 
    sdl_miyoomini_set_cpugovernor(PERFORMANCE);
-		if (access("/tmp/new_res_available", F_OK) == 0) {
-			res_x = 752;
-			res_y = 560;
-		} else {
-			res_x = 640;
-			res_y = 480;
-		}
-      RARCH_LOG("[MI_GFX]: Resolution: %dx%d\n", res_x, res_y);
-      rgui_menu_dest_rect = (SDL_Rect){(res_x - RGUI_MENU_WIDTH * 2) / 2, (res_y - RGUI_MENU_HEIGHT * 2) / 2, RGUI_MENU_WIDTH * 2, RGUI_MENU_HEIGHT * 2};
+
+   FILE *file = fopen("/tmp/screen_resolution", "r");
+   if (file == NULL || !(fscanf(file, "%dx%d", &res_x, &res_y) == 2))
+      return NULL;
+   fclose(file);
+   RARCH_LOG("[MI_GFX]: Resolution: %dx%d\n", res_x, res_y);
+   rgui_menu_dest_rect = (SDL_Rect){(res_x - RGUI_MENU_WIDTH * 2) / 2, (res_y - RGUI_MENU_HEIGHT * 2) / 2, RGUI_MENU_WIDTH * 2, RGUI_MENU_HEIGHT * 2};
 
    /* Initialise graphics subsystem, if required */
    if (sdl_subsystem_flags == 0) {

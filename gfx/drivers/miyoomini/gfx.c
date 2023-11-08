@@ -402,14 +402,13 @@ void	GFX_Init(void) {
 		MI_SYS_Init();
 		MI_GFX_Open();
 		fd_fb = open("/dev/fb0", O_RDWR);
-		if (access("/tmp/new_res_available", F_OK) == 0) {
-			res_x = 752;
-			res_y = 560;
-		} else {
-			res_x = 640;
-			res_y = 480;
-		}
-		// 640 x 480 x 32bpp x 3screen init
+
+		FILE *file = fopen("/tmp/screen_resolution", "r");
+		if (file == NULL || !(fscanf(file, "%dx%d", &res_x, &res_y) == 2))
+			return;
+		fclose(file);
+
+		// screen init
 		SDL_SetVideoMode(res_x, res_y, 32, SDL_SWSURFACE);
 		ioctl(fd_fb, FBIOGET_VSCREENINFO, &vinfo);
 		vinfo.yres_virtual = res_y * 3; vinfo.yoffset = 0;
