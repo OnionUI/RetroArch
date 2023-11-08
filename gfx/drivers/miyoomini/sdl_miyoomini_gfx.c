@@ -65,6 +65,8 @@
 #define OSD_TEXT_LINE_LEN ((uint32_t)(RGUI_MENU_WIDTH / FONT_WIDTH_STRIDE)-1)
 #define OSD_TEXT_LEN_MAX (OSD_TEXT_LINE_LEN * OSD_TEXT_LINES_MAX)
 
+int res_x, res_y;
+SDL_Rect rgui_menu_dest_rect;
 typedef struct sdl_miyoomini_video sdl_miyoomini_video_t;
 struct sdl_miyoomini_video
 {
@@ -103,14 +105,14 @@ struct sdl_miyoomini_video
 
 /* Clear OSD text area, without video_rect, rotate180 */
 static void sdl_miyoomini_clear_msgarea(void* buf, unsigned x, unsigned y, unsigned w, unsigned h, unsigned lines) {
-   if ( ( x == 0 ) && ( w == SDL_MIYOOMINI_WIDTH  ) && ( y == 0 ) && ( h == SDL_MIYOOMINI_HEIGHT ) ) return;
+   if ( ( x == 0 ) && ( w == res_x  ) && ( y == 0 ) && ( h == res_y ) ) return;
 
-   uint32_t x0 = SDL_MIYOOMINI_WIDTH - (x + w); /* left margin , right margin = x */
-   uint32_t y0 = SDL_MIYOOMINI_HEIGHT - (y + h); /* top margin , bottom margin = y */
+   uint32_t x0 = res_x - (x + w); /* left margin , right margin = x */
+   uint32_t y0 = res_y - (y + h); /* top margin , bottom margin = y */
    uint32_t sl = x0 * sizeof(uint32_t); /* left buffer size */
    uint32_t sr = x * sizeof(uint32_t); /* right buffer size */
    uint32_t sw = w * sizeof(uint32_t); /* pitch */
-   uint32_t ss = SDL_MIYOOMINI_WIDTH * sizeof(uint32_t); /* stride */
+   uint32_t ss = res_x * sizeof(uint32_t); /* stride */
    uint32_t vy = OSD_TEXT_Y_MARGIN + 2; /* clear start y offset */
    uint32_t vh = FONT_HEIGHT_STRIDE * 2 * lines - 2; /* clear height */
    uint32_t vh1 = (y0 < vy) ? 0 : (y0 - vy); if (vh1 > vh) vh1 = vh;
@@ -134,11 +136,11 @@ static void sdl_miyoomini_print_msg(void* data) {
    const char *str  = vid->msg_tmp;
    uint32_t str_len = strlen_size(str, OSD_TEXT_LEN_MAX);
    if (str_len) {
-      screen_buf              = fb_addr + (vinfo.yoffset * SDL_MIYOOMINI_WIDTH * sizeof(uint32_t));
+      screen_buf              = fb_addr + (vinfo.yoffset * res_x * sizeof(uint32_t));
       bool **font_lut         = vid->osd_font->lut;
       uint32_t str_lines      = (uint32_t)((str_len - 1) / OSD_TEXT_LINE_LEN) + 1;
       uint32_t str_counter    = OSD_TEXT_LINE_LEN;
-      const int x_pos_def     = SDL_MIYOOMINI_WIDTH - (FONT_WIDTH_STRIDE * 2);
+      const int x_pos_def     = res_x - (FONT_WIDTH_STRIDE * 2);
       int x_pos               = x_pos_def;
       int y_pos               = OSD_TEXT_Y_MARGIN - 4 + (FONT_HEIGHT_STRIDE * 2 * str_lines);
 
@@ -168,7 +170,7 @@ static void sdl_miyoomini_print_msg(void* data) {
             symbol_lut = font_lut[symbol];
 
             for (j = 0; j < FONT_HEIGHT; j++) {
-               uint32_t buff_offset = ((y_pos - (j * 2) ) * SDL_MIYOOMINI_WIDTH) + x_pos;
+               uint32_t buff_offset = ((y_pos - (j * 2) ) * res_x) + x_pos;
 
                for (i = 0; i < FONT_WIDTH; i++) {
                   if (*(symbol_lut + i + (j * FONT_WIDTH))) {
@@ -181,22 +183,22 @@ static void sdl_miyoomini_print_msg(void* data) {
                      screen_buf_ptr[+3] = 0;
 
                      /* Bottom shadow (2) */
-                     screen_buf_ptr[SDL_MIYOOMINI_WIDTH+0] = 0;
-                     screen_buf_ptr[SDL_MIYOOMINI_WIDTH+1] = 0;
-                     screen_buf_ptr[SDL_MIYOOMINI_WIDTH+2] = 0;
-                     screen_buf_ptr[SDL_MIYOOMINI_WIDTH+3] = 0;
+                     screen_buf_ptr[res_x+0] = 0;
+                     screen_buf_ptr[res_x+1] = 0;
+                     screen_buf_ptr[res_x+2] = 0;
+                     screen_buf_ptr[res_x+3] = 0;
 
                      /* Text pixel + right shadow (1) */
-                     screen_buf_ptr[(SDL_MIYOOMINI_WIDTH*2)+0] = 0;
-                     screen_buf_ptr[(SDL_MIYOOMINI_WIDTH*2)+1] = 0;
-                     screen_buf_ptr[(SDL_MIYOOMINI_WIDTH*2)+2] = vid->font_colour32;
-                     screen_buf_ptr[(SDL_MIYOOMINI_WIDTH*2)+3] = vid->font_colour32;
+                     screen_buf_ptr[(res_x*2)+0] = 0;
+                     screen_buf_ptr[(res_x*2)+1] = 0;
+                     screen_buf_ptr[(res_x*2)+2] = vid->font_colour32;
+                     screen_buf_ptr[(res_x*2)+3] = vid->font_colour32;
 
                      /* Text pixel + right shadow (2) */
-                     screen_buf_ptr[(SDL_MIYOOMINI_WIDTH*3)+0] = 0;
-                     screen_buf_ptr[(SDL_MIYOOMINI_WIDTH*3)+1] = 0;
-                     screen_buf_ptr[(SDL_MIYOOMINI_WIDTH*3)+2] = vid->font_colour32;
-                     screen_buf_ptr[(SDL_MIYOOMINI_WIDTH*3)+3] = vid->font_colour32;
+                     screen_buf_ptr[(res_x*3)+0] = 0;
+                     screen_buf_ptr[(res_x*3)+1] = 0;
+                     screen_buf_ptr[(res_x*3)+2] = vid->font_colour32;
+                     screen_buf_ptr[(res_x*3)+3] = vid->font_colour32;
                   }
                }
             }
@@ -208,8 +210,8 @@ static void sdl_miyoomini_print_msg(void* data) {
    if (vid->msg_count & 7) {
       /* clear recent OSD text */
       screen_buf = fb_addr;
-      uint32_t target_offset = vinfo.yoffset + SDL_MIYOOMINI_HEIGHT;
-      if (target_offset != SDL_MIYOOMINI_HEIGHT * 3) screen_buf += target_offset * SDL_MIYOOMINI_WIDTH * sizeof(uint32_t);
+      uint32_t target_offset = vinfo.yoffset + res_y;
+      if (target_offset != res_y * 3) screen_buf += target_offset * res_x * sizeof(uint32_t);
       sdl_miyoomini_clear_msgarea(screen_buf, vid->video_x, vid->video_y, vid->video_w, vid->video_h, vid->msg_count & 7);
    }
    vid->msg_count >>= 3;
@@ -409,21 +411,21 @@ void scalenn_32(void* data, void* __restrict src, void* __restrict dst, uint32_t
 
 /* Clear border x3 screens for framebuffer (rotate180) */
 static void sdl_miyoomini_clear_border(void* buf, unsigned x, unsigned y, unsigned w, unsigned h) {
-   if ( (x == 0) && (y == 0) && (w == SDL_MIYOOMINI_WIDTH) && (h == SDL_MIYOOMINI_HEIGHT) ) return;
-   if ( (w == 0) || (h == 0) ) { memset(buf, 0, SDL_MIYOOMINI_WIDTH * SDL_MIYOOMINI_HEIGHT * sizeof(uint32_t) * 3); return; }
+   if ( (x == 0) && (y == 0) && (w == res_x) && (h == res_y) ) return;
+   if ( (w == 0) || (h == 0) ) { memset(buf, 0, res_x * res_y * sizeof(uint32_t) * 3); return; }
 
-   uint32_t x0 = SDL_MIYOOMINI_WIDTH - (x + w); /* left margin , right margin = x */
-   uint32_t y0 = SDL_MIYOOMINI_HEIGHT - (y + h); /* top margin , bottom margin = y */
+   uint32_t x0 = res_x - (x + w); /* left margin , right margin = x */
+   uint32_t y0 = res_y - (y + h); /* top margin , bottom margin = y */
    uint32_t sl = x0 * sizeof(uint32_t); /* left buffer size */
    uint32_t sr = x * sizeof(uint32_t); /* right buffer size */
-   uint32_t st = y0 * SDL_MIYOOMINI_WIDTH * sizeof(uint32_t); /* top buffer size */
-   uint32_t sb = y * SDL_MIYOOMINI_WIDTH * sizeof(uint32_t); /* bottom buffer size */
+   uint32_t st = y0 * res_x * sizeof(uint32_t); /* top buffer size */
+   uint32_t sb = y * res_x * sizeof(uint32_t); /* bottom buffer size */
    uint32_t srl = sr + sl;
    uint32_t stl = st + sl;
    uint32_t srb = sr + sb;
    uint32_t srbtl = srl + sb + st;
    uint32_t sw = w * sizeof(uint32_t); /* pitch */
-   uint32_t ss = SDL_MIYOOMINI_WIDTH * sizeof(uint32_t); /* stride */
+   uint32_t ss = res_x * sizeof(uint32_t); /* stride */
    uint32_t i;
 
    if (stl) memset(buf, 0, stl); /* 1st top + 1st left */
@@ -684,43 +686,44 @@ static void sdl_miyoomini_set_output(sdl_miyoomini_video_t* vid, unsigned width,
    if (vid->rotate & 1) { width = vid->content_height; height = vid->content_width; }
 
    /* Calculate scaling factor */
-   uint32_t xmul = (SDL_MIYOOMINI_WIDTH<<16) / width;
-   uint32_t ymul = (SDL_MIYOOMINI_HEIGHT<<16) / height;
+   uint32_t xmul = (res_x<<16) / width;
+   uint32_t ymul = (res_y<<16) / height;
    uint32_t mul_int = (xmul < ymul ? xmul : ymul)>>16;
-
    /* Change to aspect/fullscreen scaler when integer & screen size is over (no crop) */
    if (vid->scale_integer && mul_int) {
       /* Integer Scaling */
       vid->video_w = width * mul_int;
       vid->video_h = height * mul_int;
       if (!vid->keep_aspect) {
-         /* Integer + Fullscreen , keep 4:3 for CRT console emulators */
-         uint32_t Wx3 = vid->video_w * 3;
-         uint32_t Hx4 = vid->video_h * 4;
-         if (Wx3 != Hx4) {
-            if (Wx3 > Hx4) vid->video_h = Wx3 / 4;
-            else           vid->video_w = Hx4 / 3;
+         if(!(width == res_x && height == res_y)) {
+            /* Integer + Fullscreen , keep 4:3 for CRT console emulators */
+            uint32_t Wx3 = vid->video_w * 3;
+            uint32_t Hx4 = vid->video_h * 4;
+            if (Wx3 != Hx4) {
+               if (Wx3 > Hx4) vid->video_h = Wx3 / 4;
+               else           vid->video_w = Hx4 / 3;
+            }
          }
       }
-      vid->video_x = (SDL_MIYOOMINI_WIDTH - vid->video_w) >> 1;
-      vid->video_y = (SDL_MIYOOMINI_HEIGHT - vid->video_h) >> 1;
+      vid->video_x = (res_x - vid->video_w) >> 1;
+      vid->video_y = (res_y - vid->video_h) >> 1;
    } else if (vid->keep_aspect) {
       /* Aspect Scaling */
       if (xmul > ymul) {
-         vid->video_w  = (width * SDL_MIYOOMINI_HEIGHT) / height;
-         vid->video_h = SDL_MIYOOMINI_HEIGHT;
-         vid->video_x = (SDL_MIYOOMINI_WIDTH - vid->video_w) >> 1;
+         vid->video_w  = (width * res_y) / height;
+         vid->video_h = res_y;
+         vid->video_x = (res_x - vid->video_w) >> 1;
          vid->video_y = 0;
       } else {
-         vid->video_w  = SDL_MIYOOMINI_WIDTH;
-         vid->video_h = (height * SDL_MIYOOMINI_WIDTH) / width;
+         vid->video_w  = res_x;
+         vid->video_h = (height * res_x) / width;
          vid->video_x = 0;
-         vid->video_y = (SDL_MIYOOMINI_HEIGHT - vid->video_h) >> 1;
+         vid->video_y = (res_y - vid->video_h) >> 1;
       }
    } else {
       /* Fullscreen */
-      vid->video_w = SDL_MIYOOMINI_WIDTH;
-      vid->video_h = SDL_MIYOOMINI_HEIGHT;
+      vid->video_w = res_x;
+      vid->video_h = res_y;
       vid->video_x = 0;
       vid->video_y = 0;
    }
@@ -781,6 +784,15 @@ static void *sdl_miyoomini_gfx_init(const video_info_t *video,
    const char *joypad_drv_name                = settings->arrays.input_joypad_driver;
 
    sdl_miyoomini_set_cpugovernor(PERFORMANCE);
+		if (access("/tmp/new_res_available", F_OK) == 0) {
+			res_x = 752;
+			res_y = 560;
+		} else {
+			res_x = 640;
+			res_y = 480;
+		}
+      RARCH_LOG("[MI_GFX]: Resolution: %dx%d\n", res_x, res_y);
+      rgui_menu_dest_rect = (SDL_Rect){(res_x - RGUI_MENU_WIDTH * 2) / 2, (res_y - RGUI_MENU_HEIGHT * 2) / 2, RGUI_MENU_WIDTH * 2, RGUI_MENU_HEIGHT * 2};
 
    /* Initialise graphics subsystem, if required */
    if (sdl_subsystem_flags == 0) {
@@ -795,7 +807,7 @@ static void *sdl_miyoomini_gfx_init(const video_info_t *video,
    GFX_Init();
 
    vid->menuscreen = GFX_CreateRGBSurface(
-         0, SDL_MIYOOMINI_WIDTH, SDL_MIYOOMINI_HEIGHT, 16, 0, 0, 0, 0);
+         0, res_x, res_y, 16, 0, 0, 0, 0);
    vid->menuscreen_rgui = GFX_CreateRGBSurface(
          0, RGUI_MENU_WIDTH, RGUI_MENU_HEIGHT, 16, 0, 0, 0, 0);
 
@@ -804,8 +816,8 @@ static void *sdl_miyoomini_gfx_init(const video_info_t *video,
       goto error;
    }
 
-   vid->content_width     = SDL_MIYOOMINI_WIDTH;
-   vid->content_height    = SDL_MIYOOMINI_HEIGHT;
+   vid->content_width     = res_x;
+   vid->content_height    = res_y;
    vid->rgb32             = video->rgb32;
    vid->vsync             = video->vsync;
    vid->keep_aspect       = settings->bools.video_dingux_ipu_keep_aspect;
@@ -905,7 +917,7 @@ static bool sdl_miyoomini_gfx_frame(void *data, const void *frame,
       /* HW Blit GFX surface to Framebuffer and Flip */
       GFX_UpdateRect(vid->screen, vid->video_x, vid->video_y, vid->video_w, vid->video_h);
    } else {
-      scale2x2_n16(vid->menuscreen_rgui->pixels, vid->menuscreen->pixels, RGUI_MENU_WIDTH, RGUI_MENU_HEIGHT, 0,0);
+      SDL_SoftStretch(vid->menuscreen_rgui, NULL, vid->menuscreen, &rgui_menu_dest_rect);
       stOpt.eRotate = E_MI_GFX_ROTATE_180;
       GFX_Flip(vid->menuscreen);
       stOpt.eRotate = vid->rotate;
@@ -1111,7 +1123,7 @@ static bool sdl_miyoomini_overlay_load(void *data, const void *image_data, unsig
 				0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
 	SDL_Surface *ostmp2 = GFX_DuplicateSurface(ostmp);
 	SDL_FreeSurface(ostmp);
-	vid->overlay_surface = GFX_CreateRGBSurface(0, 640, 480, 32,
+	vid->overlay_surface = GFX_CreateRGBSurface(0, res_x, res_y, 32,
 				0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
 	ostmp2->flags &= ~SDL_SRCALPHA;
 	GFX_BlitSurfaceRotate(ostmp2, NULL, vid->overlay_surface, NULL, 2);
