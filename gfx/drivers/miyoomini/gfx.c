@@ -645,33 +645,19 @@ void	RotateSurfaceNEON(void* src) {
 
 void RotateSurface(SDL_Surface *surface)
 {
-	// this is a replacement for RotateSurfaceNEON
-	// which should eventually be updated to be resolution independent
-	// but I couldn't find the conditions where RotateSurfaceNEON is called anyway
-    int pitch = surface->pitch;
-    int w = surface->w;
-    int h = surface->h;
+    if (!surface || surface->format->BytesPerPixel != 4)
+        return;
+
+    int width = surface->w;
+    int height = surface->h;
     uint32_t *pixels = (uint32_t *)surface->pixels;
 
-	// flip vertically
-    for (int y = 0; y < h / 2; y++) {
-        uint32_t *row1 = pixels + y * pitch / 4;
-        uint32_t *row2 = pixels + (h - 1 - y) * pitch / 4;
-
-        for (int x = 0; x < w; x++) {
-            uint32_t temp = row1[x];
-            row1[x] = row2[x];
-            row2[x] = temp;
-        }
-    }
-
-	// flip horizontally
-    for (int y = 0; y < h; y++) {
-        for (int x = 0; x < w / 2; x++) {
-            uint32_t *row = pixels + y * pitch / 4;
-            uint32_t temp = row[x];
-            row[x] = row[w - 1 - x];
-            row[w - 1 - x] = temp;
+    for (int y = 0; y < height / 2; y++) {
+        for (int x = 0; x < width; x++) {
+            uint32_t topPixel = pixels[y * width + x];
+            uint32_t bottomPixel = pixels[(height - y - 1) * width + (width - x - 1)];
+            pixels[y * width + x] = bottomPixel;
+            pixels[(height - y - 1) * width + (width - x - 1)] = topPixel;
         }
     }
 }
