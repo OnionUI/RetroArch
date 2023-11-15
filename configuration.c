@@ -1925,6 +1925,7 @@ static struct config_bool_setting *populate_settings_bool(
    SETTING_BOOL("materialui_thumbnail_background_enable", &settings->bools.menu_materialui_thumbnail_background_enable, true, DEFAULT_MATERIALUI_THUMBNAIL_BACKGROUND_ENABLE, false);
 #endif
 #ifdef HAVE_RGUI
+   SETTING_BOOL("menu_rgui_fullscreen_stretch",            &settings->bools.menu_rgui_fullscreen_stretch, true, DEFAULT_RGUI_FULLSCREEN_STRETCH, false);
    SETTING_BOOL("rgui_background_filler_thickness_enable", &settings->bools.menu_rgui_background_filler_thickness_enable, true, true, false);
    SETTING_BOOL("rgui_border_filler_thickness_enable",     &settings->bools.menu_rgui_border_filler_thickness_enable, true, true, false);
    SETTING_BOOL("rgui_border_filler_enable",               &settings->bools.menu_rgui_border_filler_enable, true, true, false);

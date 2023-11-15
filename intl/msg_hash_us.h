@@ -10433,6 +10433,14 @@ MSG_HASH(
 /* RGUI: Settings > User Interface > Appearance */
 
 MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_MENU_RGUI_FULLSCREEN_STRETCH,
+   "Stretch to full screen"
+   )
+MSG_HASH(
+   MENU_ENUM_SUBLABEL_MENU_RGUI_FULLSCREEN_STRETCH,
+   "Stretch the menu to fill the entire screen."
+   )
+MSG_HASH(
    MENU_ENUM_LABEL_VALUE_MENU_RGUI_BACKGROUND_FILLER_THICKNESS_ENABLE,
    "Background Filler Thickness"
    )
