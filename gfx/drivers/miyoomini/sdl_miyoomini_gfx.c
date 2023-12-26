@@ -65,7 +65,7 @@
 #define OSD_TEXT_LINE_LEN ((uint32_t)(RGUI_MENU_WIDTH / FONT_WIDTH_STRIDE)-1)
 #define OSD_TEXT_LEN_MAX (OSD_TEXT_LINE_LEN * OSD_TEXT_LINES_MAX)
 
-int res_x, res_y;
+uint32_t res_x, res_y;
 SDL_Rect rgui_menu_dest_rect;
 bool previous_fullscreen_stretch;
 typedef struct sdl_miyoomini_video sdl_miyoomini_video_t;
@@ -786,11 +786,27 @@ static void *sdl_miyoomini_gfx_init(const video_info_t *video,
 
    sdl_miyoomini_set_cpugovernor(PERFORMANCE);
 
-   FILE *file = fopen("/tmp/screen_resolution", "r");
-   if (file == NULL || !(fscanf(file, "%dx%d", &res_x, &res_y) == 2))
-      return NULL;
-   fclose(file);
-   RARCH_LOG("[MI_GFX]: Resolution: %dx%d\n", res_x, res_y);
+   const char *fb_device = "/dev/fb0";
+
+    int fb = open(fb_device, O_RDWR);
+    if (fb == -1) {
+        RARCH_ERR("Error opening framebuffer device");
+        return NULL;
+    }
+
+    struct fb_var_screeninfo vinfo;
+    if (ioctl(fb, FBIOGET_VSCREENINFO, &vinfo)) {
+        RARCH_ERR("Error reading variable information");
+        close(fb);
+        return NULL;
+    }
+
+   res_x = vinfo.xres;
+   res_y = vinfo.yres;
+   close(fb);
+
+   RARCH_LOG("[MI_GFX]: Resolution: %ux%u\n", res_x, res_y);
+
    rgui_menu_dest_rect = (SDL_Rect){(res_x - RGUI_MENU_WIDTH * 2) / 2, (res_y - RGUI_MENU_HEIGHT * 2) / 2, RGUI_MENU_WIDTH * 2, RGUI_MENU_HEIGHT * 2};
 
    /* Initialise graphics subsystem, if required */

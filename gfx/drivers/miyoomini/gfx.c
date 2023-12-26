@@ -28,7 +28,7 @@ enum { GFX_BLOCKING = 1, GFX_FLIPWAIT = 2 };
 
 int			fd_fb = 0;
 void			*fb_addr;
-int 		res_x, res_y;
+uint32_t 		res_x, res_y;
 struct			fb_fix_screeninfo finfo;
 struct			fb_var_screeninfo vinfo;
 MI_GFX_Surface_t	stSrc;
@@ -403,10 +403,6 @@ void	GFX_Init(void) {
 		MI_GFX_Open();
 		fd_fb = open("/dev/fb0", O_RDWR);
 
-		FILE *file = fopen("/tmp/screen_resolution", "r");
-		if (file == NULL || !(fscanf(file, "%dx%d", &res_x, &res_y) == 2))
-			return;
-		fclose(file);
 
 		// screen init
 		SDL_SetVideoMode(res_x, res_y, 32, SDL_SWSURFACE);
@@ -419,6 +415,8 @@ void	GFX_Init(void) {
 		vinfo.red.offset = 16; vinfo.transp.offset = 24; vinfo.bits_per_pixel = 32; */
 		ioctl(fd_fb, FBIOPUT_VSCREENINFO, &vinfo);
 
+		res_x = vinfo.xres;
+		res_y = vinfo.yres;
 		// get physical address of FB
 		ioctl(fd_fb, FBIOGET_FSCREENINFO, &finfo);
 
