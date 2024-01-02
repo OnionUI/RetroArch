@@ -9,15 +9,21 @@
 #include "runloop.h"
 #include "string/stdstring.h"
 #include "verbosity.h"
+#include <fcntl.h>
+#include <linux/fb.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
+
+static int res_x = 0, res_y = 0;
 
 /**
  * @brief Displays an on-screen notification of the current scaling option.
  * 
  * The 4 states are:
- * 1. Integer scaling: OFF (Original)
- * 2. Integer scaling: OFF (4:3)
- * 3. Integer scaling: ON (Original)
- * 4. Integer scaling: ON (4:3)
+ * 1. Integer scaling: OFF (Original) - resolution
+ * 2. Integer scaling: OFF (4:3) - resolution
+ * 3. Integer scaling: ON (Original) - resolution
+ * 4. Integer scaling: ON (4:3) - resolution
  * 
  * @param settings 
  */
@@ -28,9 +34,30 @@ static void show_miyoo_fullscreen_notification(settings_t *settings)
 
     msg[0] = '\0';
 
-    snprintf(msg, sizeof(msg), "Integer scaling: %s (%s)",
+    if (res_x == 0 || res_y == 0) {
+        const char *fb_device = "/dev/fb0";
+        int fb = open(fb_device, O_RDWR);
+
+        if (fb == -1) {
+            RARCH_ERR("Error opening framebuffer device");
+        }
+        else {
+            struct fb_var_screeninfo vinfo;
+            if (ioctl(fb, FBIOGET_VSCREENINFO, &vinfo)) {
+                RARCH_ERR("Error reading variable information");
+                close(fb);
+            }
+            else {
+                res_x = vinfo.xres;
+                res_y = vinfo.yres;
+            }
+        }
+    }
+
+    snprintf(msg, sizeof(msg), "Integer scaling: %s (%s) - %dx%d",
              settings->bools.video_scale_integer ? "ON" : "OFF",
-             settings->bools.video_dingux_ipu_keep_aspect ? "Original" : "4:3");
+             settings->bools.video_dingux_ipu_keep_aspect ? "Original" : "4:3",
+             res_x, res_y);
 
     msg_obj.msg = msg;
     msg_obj.duration = 1000;
