@@ -19,6 +19,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <SDL/SDL.h>
 #include <SDL/SDL_video.h>
@@ -787,6 +788,12 @@ static void *sdl_miyoomini_gfx_init(const video_info_t *video,
    sdl_miyoomini_set_cpugovernor(PERFORMANCE);
 
    const char *fb_device = "/dev/fb0";
+
+   if (access("/tmp/new_res_available", F_OK) == 0) {
+      RARCH_LOG("[MI_GFX]: 560p available, changing resolution\n");
+      system("/mnt/SDCARD/.tmp_update/script/change_resolution.sh 752x560");
+   } else
+      RARCH_LOG("[MI_GFX]: 560p not available\n");
 
     int fb = open(fb_device, O_RDWR);
     if (fb == -1) {
