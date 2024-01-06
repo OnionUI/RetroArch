@@ -9623,14 +9623,7 @@ MSG_HASH(
    )
 
 /* RGUI: Settings > User Interface > Appearance */
-MSG_HASH(
-   MENU_ENUM_LABEL_VALUE_MENU_RGUI_FULLSCREEN_STRETCH,
-   "Vollbildmodus"
-   )
-MSG_HASH(
-   MENU_ENUM_SUBLABEL_MENU_RGUI_FULLSCREEN_STRETCH,
-   "Zeige das Menü im Vollbildmodus an."
-   )
+
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_MENU_RGUI_BACKGROUND_FILLER_THICKNESS_ENABLE,
    "Hintergrundfüllerdicke aktivieren"

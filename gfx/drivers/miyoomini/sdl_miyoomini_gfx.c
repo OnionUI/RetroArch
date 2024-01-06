@@ -68,7 +68,6 @@
 
 uint32_t res_x, res_y;
 SDL_Rect rgui_menu_dest_rect;
-bool previous_fullscreen_stretch;
 typedef struct sdl_miyoomini_video sdl_miyoomini_video_t;
 struct sdl_miyoomini_video
 {
@@ -938,17 +937,7 @@ static bool sdl_miyoomini_gfx_frame(void *data, const void *frame,
       /* HW Blit GFX surface to Framebuffer and Flip */
       GFX_UpdateRect(vid->screen, vid->video_x, vid->video_y, vid->video_w, vid->video_h);
    } else {
-      settings_t *settings       = config_get_ptr();
-      if (unlikely(!settings))
-         SDL_SoftStretch(vid->menuscreen_rgui, NULL, vid->menuscreen, &rgui_menu_dest_rect);
-      else{
-         if (unlikely(settings->bools.menu_rgui_fullscreen_stretch != previous_fullscreen_stretch)) {
-            previous_fullscreen_stretch = settings->bools.menu_rgui_fullscreen_stretch;
-            /* clear screen to remove ghost image of menu */
-            GFX_FillRect(vid->menuscreen, NULL, 0);
-         }
-         SDL_SoftStretch(vid->menuscreen_rgui, NULL, vid->menuscreen, settings->bools.menu_rgui_fullscreen_stretch ? NULL : &rgui_menu_dest_rect);
-      }
+      SDL_SoftStretch(vid->menuscreen_rgui, NULL, vid->menuscreen, &rgui_menu_dest_rect);
       stOpt.eRotate = E_MI_GFX_ROTATE_180;
       GFX_Flip(vid->menuscreen);
       stOpt.eRotate = vid->rotate;

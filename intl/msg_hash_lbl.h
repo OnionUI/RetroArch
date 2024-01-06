@@ -5159,10 +5159,6 @@ MSG_HASH(
    "menu_rgui_border_filler_thickness_enable"
    )
 MSG_HASH(
-   MENU_ENUM_LABEL_MENU_RGUI_FULLSCREEN_STRETCH,
-   "menu_rgui_fullscreen_stretch"
-   )
-MSG_HASH(
    MENU_ENUM_LABEL_MENU_RGUI_BACKGROUND_FILLER_THICKNESS_ENABLE,
    "menu_rgui_background_filler_thickness_enable"
    )
