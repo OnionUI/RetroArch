@@ -674,7 +674,10 @@ SDL_Surface*	GFX_DuplicateSurface(SDL_Surface *src) {
 		if (dst) {
 			MI_GFX_WaitAllDone(TRUE, 0);
 			MI_SYS_MemcpyPa(dst->pixelsPa, finfo.smem_start + res_x*vinfo.yoffset*4, res_x*res_y*4);
-			RotateSurface(dst);
+			if(res_x == 640 && res_y == 480)
+				RotateSurfaceNEON(dst);
+			else
+				RotateSurface(dst);
 		}
 	}
 	return dst;
