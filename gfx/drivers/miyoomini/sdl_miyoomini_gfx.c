@@ -67,6 +67,7 @@
 #define OSD_TEXT_LEN_MAX (OSD_TEXT_LINE_LEN * OSD_TEXT_LINES_MAX)
 
 uint32_t res_x, res_y;
+bool rgui_menu_stretch = true;
 SDL_Rect rgui_menu_dest_rect;
 typedef struct sdl_miyoomini_video sdl_miyoomini_video_t;
 struct sdl_miyoomini_video
@@ -787,8 +788,10 @@ static void *sdl_miyoomini_gfx_init(const video_info_t *video,
    sdl_miyoomini_set_cpugovernor(PERFORMANCE);
 
    const char *fb_device = "/dev/fb0";
+   const char *rgui_menu_stretch_file = "/mnt/SDCARD/.tmp_update/config/RetroArch/.noMenuStretch";
+   const char *new_res_file = "/tmp/new_res_available";
 
-   if (access("/tmp/new_res_available", F_OK) == 0) {
+   if (access(new_res_file, F_OK) == 0) {
       RARCH_LOG("[MI_GFX]: 560p available, changing resolution\n");
       system("/mnt/SDCARD/.tmp_update/script/change_resolution.sh 752x560");
    }
@@ -812,8 +815,12 @@ static void *sdl_miyoomini_gfx_init(const video_info_t *video,
 
    RARCH_LOG("[MI_GFX]: Resolution: %ux%u\n", res_x, res_y);
 
-   rgui_menu_dest_rect = (SDL_Rect){(res_x - RGUI_MENU_WIDTH * 2) / 2, (res_y - RGUI_MENU_HEIGHT * 2) / 2, RGUI_MENU_WIDTH * 2, RGUI_MENU_HEIGHT * 2};
+   if (access(rgui_menu_stretch_file, F_OK) == 0 || (res_x == 640 && res_y == 480)){
+      RARCH_LOG("[MI_GFX]: Menu stretch disabled\n");
+      rgui_menu_stretch = false;
+   }
 
+   rgui_menu_dest_rect = (SDL_Rect){(res_x - RGUI_MENU_WIDTH * 2) / 2, (res_y - RGUI_MENU_HEIGHT * 2) / 2, RGUI_MENU_WIDTH * 2, RGUI_MENU_HEIGHT * 2};
    /* Initialise graphics subsystem, if required */
    if (sdl_subsystem_flags == 0) {
       if (SDL_Init(SDL_INIT_VIDEO) < 0) return NULL;
@@ -937,7 +944,7 @@ static bool sdl_miyoomini_gfx_frame(void *data, const void *frame,
       /* HW Blit GFX surface to Framebuffer and Flip */
       GFX_UpdateRect(vid->screen, vid->video_x, vid->video_y, vid->video_w, vid->video_h);
    } else {
-      SDL_SoftStretch(vid->menuscreen_rgui, NULL, vid->menuscreen, &rgui_menu_dest_rect);
+      SDL_SoftStretch(vid->menuscreen_rgui, NULL, vid->menuscreen, rgui_menu_stretch ? NULL : &rgui_menu_dest_rect);
       stOpt.eRotate = E_MI_GFX_ROTATE_180;
       GFX_Flip(vid->menuscreen);
       stOpt.eRotate = vid->rotate;
